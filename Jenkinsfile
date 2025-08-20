@@ -2,29 +2,24 @@ pipeline {
     agent any
 
     tools {
-        maven 'Maven'  // make sure Maven is configured in Jenkins (Manage Jenkins → Global Tool Configuration)
-        jdk 'JDK11'    // same for Java (set up once in Jenkins)
+        // Confirms the tool names match your Jenkins configuration
+        maven 'Maven' 
+        jdk 'JDK11'   
     }
 
     stages {
-        stage('Build') {
+        stage('Build, Test & Package') {
             steps {
-                echo 'Building the application...'
-                sh 'mvn clean compile'
+                echo 'Building, testing, and packaging the application...'
+                // The 'package' goal will automatically run 'clean', 'compile', and 'test'.
+                sh 'mvn clean package'
             }
         }
-
-        stage('Test') {
+        
+        stage('Archive Artifacts') {
             steps {
-                echo 'Running tests...'
-                sh 'mvn test'
-            }
-        }
-
-        stage('Package/Deploy') {
-            steps {
-                echo 'Packaging application into JAR...'
-                sh 'mvn package'
+                echo 'Archiving the generated JAR file...'
+                // This step saves the JAR as a build artifact for easy access.
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
@@ -32,10 +27,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo '🎉 Pipeline completed successfully! The JAR file is ready.'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo '❌ Pipeline failed! Check the logs for details.'
         }
     }
 }
